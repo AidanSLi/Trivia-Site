@@ -24,3 +24,6 @@ async function readJson() {
 
     console.log(teams);
 }
+
+
+//FAKE
