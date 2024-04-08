@@ -7,10 +7,49 @@
         <link rel="stylesheet" type="text/css" href="css/default.css">    <!-- CSS -->
     </head>
     <body>
-        
-        <button type="button" class="btn btn-primary" id="write_test_btn">Write to teams.json</button>
-        <button type="button" class="btn btn-primary" id="read_test_btn">Read from teams.json</button>
+        <br>
+        <div class="team_settings">
+            <h3>Teams</h3>
+            <hr>
+            <label for="num_teams_range" class="form-label">
+                # of teams: <span id="num_teams_display"></span>
+            </label>
+            <input type="range" class="form-range" id="num_teams_range" min="2">
+            <div id="team_name_inputs">
+                <!-- Team name inputs -->
+            </div>
+        </div>
 
+        <br>
+
+        <div class="question_settings">
+            <h3>Questions</h3>
+            <hr>
+            <label for="num_questions_range" class="form-label">
+                # of questions: <span id="num_questions_display"></span>
+            </label>
+            <input type="range" class="form-range" id="num_questions_range" min="2">
+            <div id="question_inputs" class="container">
+                <!-- Question inputs -->
+            </div>
+        </div>
+
+        <div class="wager_settings">
+            <h3>Wagers</h3>
+            <hr>
+            <button type="button" class="btn btn-primary" id="add_wager_btn">Add Wager Value</button>
+            <br><br>
+            <div id="wagers" class="container">
+                <div class="row">
+                    <!-- Wager tiles -->
+                </div>
+            </div>
+            <br>
+            Total wagers: <span id="total_wagers"></span>
+        </div>
+
+        <br>
+        
         <script src="js/bootstrap.bundle.js"></script> <!-- Bootstrap 5 JS -->
         <script src="js/control.js"></script> <!-- Page specific JS -->
     </body>

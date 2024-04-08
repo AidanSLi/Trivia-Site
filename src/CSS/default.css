@@ -1,0 +1,32 @@
+.team_settings {
+    width: 90%;
+    margin: auto;
+}
+
+.question_settings {
+    width: 90%;
+    margin: auto;
+}
+
+.wager_tile {
+    margin: 10px;
+    width: 200px;
+    border-radius: 5px;
+    border: 2px solid black;
+    background-color: lightgrey;
+}
+
+.wager_tile_value {
+    font-size: 20px;
+}
+
+.wager_tile_quantity {
+    font-size: 12px;
+    text-align: right;
+}
+
+.wager_tile_add {
+    text-align: center;
+    line-height: 57px;
+    font-size: 64px;
+}
