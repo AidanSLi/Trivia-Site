@@ -1,3 +1,5 @@
+//for some reason the relative path changes??
+const ROOT = '';
 //variables
 var teams = {};
 var wagers = [];
@@ -142,7 +144,7 @@ function updateQuestionInputVisibility() {
 }
 
 function loadTeamSettings() {
-    fetch('../json/teams.json', {
+    fetch(`${ROOT}json/teams.json`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -206,7 +208,7 @@ function cycleWagerChip(e) {
 }
 
 function loadQuestions() {
-    fetch('../json/questions.json', {
+    fetch(`${ROOT}json/questions.json`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -240,7 +242,7 @@ function fillQuestions() {
 }
 
 function loadWagers() {
-	fetch('../json/wagers.json', {
+	fetch(`${ROOT}json/wagers.json`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -341,7 +343,7 @@ function saveTeamData() {
 
     let data = new URLSearchParams();
     data.append('data', JSON.stringify(teams));
-    fetch('../php/write_teams.php', {
+    fetch(`${ROOT}php/write_teams.php`, {
         method: 'POST',
         body: data,
         headers: {
@@ -394,7 +396,7 @@ function saveQuestions() {
     //console.log(questions);
     //console.log(JSON.stringify(questions));
     data.append('data', JSON.stringify(questions));
-    fetch('../php/write_questions.php', {
+    fetch(`${ROOT}php/write_questions.php`, {
         method: 'POST',
         body: data,
         headers: {
@@ -460,7 +462,7 @@ function saveWagerSettings() {
     //write to wagers.json
     let data = new URLSearchParams();
     data.append('data', JSON.stringify(wagers));
-    fetch('../php/write_wagers.php', {
+    fetch(`${ROOT}php/write_wagers.php`, {
         method: 'POST',
         body: data,
         headers: {

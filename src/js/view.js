@@ -1,3 +1,5 @@
+//for some reason the relative path changes??
+const ROOT = '';
 //variables
 const REFRESH_TIME = 5;
 var questions = {
@@ -14,7 +16,7 @@ if (!data_refresh) data_refresh = setInterval(refreshData, REFRESH_TIME*1000);
 
 function refreshData() {
     //get teams.json
-    fetch('../json/teams.json', {
+    fetch(`${ROOT}json/teams.json`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -33,7 +35,7 @@ function refreshData() {
     });
 
     //get questions.json
-    fetch('../json/questions.json', {
+    fetch(`${ROOT}json/questions.json`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
