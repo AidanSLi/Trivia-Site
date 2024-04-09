@@ -1,1 +1,1 @@
-{"orange":{},"purple":{}}
+{"orange":{"wagers":[{"value":1,"answered":true,"correct":true},{"value":1,"answered":true,"correct":true},{"value":2,"answered":false,"correct":false},{"value":2,"answered":false,"correct":false}]},"purple":{"wagers":[{"value":1,"answered":false,"correct":false},{"value":1,"answered":false,"correct":false},{"value":2,"answered":true,"correct":false},{"value":2,"answered":false,"correct":false}]}}

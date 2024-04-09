@@ -156,7 +156,7 @@ function loadTeamSettings() {
     }).catch(error => {
         console.log(error);
     }).then(json => {
-        console.log(json);
+        //console.log(json);
         teams = json;
         fillTeamInputs();
     });
@@ -220,7 +220,7 @@ function loadQuestions() {
     }).catch(error => {
         console.log(error);
     }).then(json => {
-        console.log(json);
+        //console.log(json);
         //this includes the whole questions object
         questions = json;
         fillQuestions();
@@ -254,7 +254,8 @@ function loadWagers() {
     }).catch(error => {
         console.log(error);
     }).then(json => {
-        console.log(json);
+        //console.log(json);
+        wagers = json;
         buildWagers(json);
     });
 }
@@ -307,7 +308,7 @@ function deleteWager(e) {
     e.parentElement.parentElement.parentElement.remove();
 }
 
-//this overwrites all team objects and must be called before saving wager values
+//this saves all team objects with current wager chip values
 function saveTeamData() {
     let teams_data = {};
     let team_containers =  document.querySelector('#team_name_inputs').children;
@@ -317,9 +318,26 @@ function saveTeamData() {
             console.log(`Cannot save team names: team ${i+1} name empty`);
             return;
         }
-        teams_data[team_name] = {};
+        let team_wagers = [];
+        let team_wagers_div = document.querySelector(`#team_${i+1}_wagers`);
+        for (let team_wager_col of team_wagers_div.children) {
+            let team_wager_chip = team_wager_col.querySelector('div');
+            //console.log(team_wager_chip);
+            //console.log(team_wager_chip.classList.contains('wager_chip_unanswered'));
+            let chip_value = parseInt(team_wager_chip.innerHTML);
+            team_wagers.push({
+                value: chip_value,
+                answered: !team_wager_chip.classList.contains('wager_chip_unanswered'),
+                correct: team_wager_chip.classList.contains('wager_chip_correct')
+            });
+        }
+        //console.log(team_wagers);
+        teams_data[team_name] = {
+            wagers: team_wagers
+        };
 	}
     teams = teams_data;
+    //console.log(teams);
 
     let data = new URLSearchParams();
     data.append('data', JSON.stringify(teams));
@@ -334,7 +352,7 @@ function saveTeamData() {
         if(!response.ok) {
             throw response;
         }
-        console.log(response.json());
+        //console.log(response.json());
     }).catch(error => {
         console.log(error);
     });
@@ -350,7 +368,7 @@ function saveQuestions() {
             question: question_inputs[i].children[0].querySelector('textarea').value,
             answer: question_inputs[i].children[1].querySelector('textarea').value
         }
-        console.log(`i=${i}, question: ${question.question}, answer: ${question.answer}`);
+        //console.log(`i=${i}, question: ${question.question}, answer: ${question.answer}`);
         if (!question.question || !question.answer) {
             console.log('Cannot save. Empty field for question or answer.');
             return;
@@ -360,9 +378,21 @@ function saveQuestions() {
 
     //set the global questions variable
     questions.questions = question_settings;
+    questions.current = document.querySelector('#current_question_number').value ? document.querySelector('#current_question_number').value : 1;
+    let visibility_selection = document.querySelector('#question_visibility_select').value;
+    if (visibility_selection == 1) {
+        questions.shown = false;
+        questions.revealed = false;
+    } else if (visibility_selection == 2) {
+        questions.shown = true;
+        questions.revealed = false;
+    } else if (visibility_selection == 3) {
+        questions.shown = true;
+        questions.revealed = true;
+    }
     let data = new URLSearchParams();
-    console.log(questions);
-    console.log(JSON.stringify(questions));
+    //console.log(questions);
+    //console.log(JSON.stringify(questions));
     data.append('data', JSON.stringify(questions));
     fetch('../php/write_questions.php', {
         method: 'POST',
@@ -375,17 +405,18 @@ function saveQuestions() {
         if(!response.ok) {
             throw response;
         }
-        console.log(response.json());
+        //console.log(response.json());
     }).catch(error => {
         console.log(error);
     });
 }
 
 function saveWagerSettings() {
+    console.log(wagers);
     let wager_data = [];
     let wager_tiles = document.querySelector('#wagers div').children;
     for (let tile of wager_tiles) {
-        console.log(tile);
+        //console.log(tile);
         let fields = tile.querySelector('div').children;
         let value_field = fields[0].querySelector('input').value;
         let quantity_field = fields[1].querySelector('input').value;
@@ -394,7 +425,7 @@ function saveWagerSettings() {
             quantity: quantity_field
         });
     }
-    console.log(wager_data);
+    //console.log(wager_data);
     
     let total_wagers = 0;
     for (let wager of wager_data) total_wagers += parseInt(wager.quantity);
@@ -404,21 +435,26 @@ function saveWagerSettings() {
         return;
     }
     document.querySelector('#total_wagers').innerHTML = total_wagers;
+    let wagers_changed = JSON.stringify(wagers) != JSON.stringify(wager_data);
+    console.log(wager_data);
+    console.log('wagers changed: ' + wagers_changed);
     wagers = wager_data;
-    //rebuild team wager chips
-    for (let i=0; i<MAX_TEAMS; i++) {
-        let team_wagers_div = document.querySelector(`#team_${i+1}_wagers`);
-        let team_wagers_html = ``;
-        for (let wager_info of wagers) {
-            for (let i=0; i<wager_info.quantity; i++) {
-                team_wagers_html += `
-                <div class='col'>
-                    <div class='wager_chip wager_chip_unanswered' onclick='cycleWagerChip(this)'>${wager_info.value}</div>
-                </div>
-                `;
+    //rebuild team wager chips if wagers are different
+    if (wagers_changed) {
+        for (let i=0; i<MAX_TEAMS; i++) {
+            let team_wagers_div = document.querySelector(`#team_${i+1}_wagers`);
+            let team_wagers_html = ``;
+            for (let wager_info of wagers) {
+                for (let i=0; i<wager_info.quantity; i++) {
+                    team_wagers_html += `
+                    <div class='col'>
+                        <div class='wager_chip wager_chip_unanswered' onclick='cycleWagerChip(this)'>${wager_info.value}</div>
+                    </div>
+                    `;
+                }
             }
+            team_wagers_div.innerHTML = team_wagers_html;
         }
-        team_wagers_div.innerHTML = team_wagers_html;
     }
 
     //write to wagers.json
@@ -435,7 +471,7 @@ function saveWagerSettings() {
         if(!response.ok) {
             throw response;
         }
-        console.log(response);
+        //console.log(response);
     }).catch(error => {
         console.log(error);
     });

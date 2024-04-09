@@ -2,12 +2,22 @@
     width: 35%;
 }
 
+.controls_settings {
+    width: 90%;
+    margin: auto;
+}
+
 .team_settings {
     width: 90%;
     margin: auto;
 }
 
 .question_settings {
+    width: 90%;
+    margin: auto;
+}
+
+.wager_settings {
     width: 90%;
     margin: auto;
 }
