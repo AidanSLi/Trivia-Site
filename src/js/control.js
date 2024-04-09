@@ -1,7 +1,7 @@
 //for some reason the relative path changes??
 const ROOT = '';
 //variables
-var teams = {};
+var teams = [];
 var wagers = [];
 var questions = {
     current: 1,
@@ -22,6 +22,10 @@ document.querySelector('#num_questions_range').max = MAX_QUESTIONS;
 document.querySelector('#add_wager_btn').onclick = addWagerTile;
 
 document.querySelector('#save_all_btn').onclick = saveAll;
+document.querySelector('#save_controls_btn').onclick = saveControls();
+document.querySelector('#save_teams_btn').onclick = saveTeamData();
+document.querySelector('#save_questions_btn').onclick = saveQuestions();
+document.querySelector('#save_wagers_btn').onclick = saveWagerSettings();
 
 //document setup
 buildTeamNameInputs();
@@ -36,8 +40,10 @@ loadWagers();
 Object Structure
 ------------------------------
 teams.json: 
-{
-    red: {
+[
+    {
+        team_name: "red",
+        score_bias: 3,
         wagers: [   //we calculate point totals from this
             {
                 value: 1,
@@ -46,7 +52,7 @@ teams.json:
             }
         ]
     }
-}
+]
 
 
 questions.json:
@@ -78,6 +84,8 @@ function saveAll() {
     saveWagerSettings();
     //save team data
     saveTeamData();
+    //save question controls
+    saveControls();
 }
 
 function buildTeamNameInputs() {
@@ -85,10 +93,24 @@ function buildTeamNameInputs() {
     for(let i=0; i<MAX_TEAMS; i++) {
         //add team name input
         inputsHtml += `
-        <div class='container'>
-            <div class='row'>
-                <label for='team_${i+1}_name_input'>Team #${i+1}</label>
-                <input id='team_${i+1}_name_input' class='form-control' placeholder='Enter team name'>
+        <div class='container team_control_box'>
+            <div class='row' id='team_${i+1}_header'>
+                <div class='col-4'>
+                    <label for='team_${i+1}_name_input'>Team #${i+1}</label>
+                    <input id='team_${i+1}_name_input' class='form-control' placeholder='Enter team name'>
+                </div>
+                <div class='col-4'>
+                    <label for='team_${i+1}_score_bias'>Manual score bias</label>
+                    <input type="number" class='form-control' id='team_${i+1}_score_bias' oninput='updateScoreDisplays()'>
+                </div>
+                <div class='col-4 team_running_info'>
+                    <div>
+                        Wagers used: <span id='team_${i+1}_wagers_used'></span>
+                    </div>
+                    <div>
+                        Total Score: <span id='team_${i+1}_total_score'></span>
+                    </div>
+                </div>
             </div>
             <div class='row' id='team_${i+1}_wagers'>
             </div>
@@ -168,13 +190,12 @@ function loadTeamSettings() {
 //Team order not preserved, hopefully doesn't matter
 function fillTeamInputs() {
     let team_containers = document.querySelector('#team_name_inputs').children;
-    let i=0;
     //cycle through each team
-    for (let team in teams) {
-        let team_name_input = team_containers[i].children[0].querySelector('input');
-        team_name_input.value = team;
+    for (let i=0; i<teams.length; i++) {
+        let team_name_input = document.querySelector(`#team_${i+1}_name_input`);
+        team_name_input.value = teams[i].team_name;
         //retrieve any stored wager data to display
-        let team_wagers = teams[team].wagers;
+        let team_wagers = teams[i].wagers;
         if(team_wagers) {
             let team_wagers_div = document.querySelector(`#team_${i+1}_wagers`);
             let team_wagers_html = ``;
@@ -187,11 +208,12 @@ function fillTeamInputs() {
             }
             team_wagers_div.innerHTML = team_wagers_html;
         }
-
-        i++;
+        //fill manual score bias
+        document.querySelector(`#team_${i+1}_score_bias`).value = teams[i].score_bias;
     }
-    document.querySelector('#num_teams_range').value = i;
+    document.querySelector('#num_teams_range').value = teams.length;
     updateTeamInputVisibility();
+    updateScoreDisplays();
 }
 
 //cycle wager chip between correct, incorrect, and unanswered/neutral
@@ -205,6 +227,29 @@ function cycleWagerChip(e) {
     e.classList.remove('wager_chip_correct');
     e.classList.remove('wager_chip_incorrect');
     e.classList.add(`wager_chip_${nextState}`);
+
+    updateScoreDisplays();
+}
+
+//calculate all scores and wagers used based on display
+function updateScoreDisplays() {
+    for (let i=0; i<document.querySelector('#team_name_inputs').children.length; i++) {
+        let score_bias_input = document.querySelector(`#team_${i+1}_score_bias`);
+        let wagers_used = 0;
+        let total_score = score_bias_input.value? parseInt(score_bias_input.value) : 0;
+        let wager_cols = document.querySelector(`#team_${i+1}_wagers`).children;
+        for (let wager_col of wager_cols) {
+            let chip = wager_col.querySelector('div');
+            if ( !chip.classList.contains('wager_chip_unanswered') ) {
+                wagers_used++;
+                if ( chip.classList.contains('wager_chip_correct') ) {
+                    total_score += parseInt(chip.innerHTML);
+                }
+            }
+        }
+        document.querySelector(`#team_${i+1}_wagers_used`).innerHTML = wagers_used;
+        document.querySelector(`#team_${i+1}_total_score`).innerHTML = total_score;
+    }
 }
 
 function loadQuestions() {
@@ -230,6 +275,7 @@ function loadQuestions() {
 }
 
 function fillQuestions() {
+    //update question section
     let question_inputs = document.querySelector('#question_inputs').children;
     for (let i=0; i<questions.questions.length; i++) {
         //question for the row
@@ -239,6 +285,10 @@ function fillQuestions() {
     } 
     document.querySelector('#num_questions_range').value = questions.questions.length;
     updateQuestionInputVisibility();
+
+    //update current question section
+    document.querySelector('#current_question_number').value = questions.current;
+    //question visibility will stay on "not visible" so the answer is not accidentally shown
 }
 
 function loadWagers() {
@@ -269,10 +319,10 @@ function buildWagers(wager_array) {
 		<div class='col'>
 			<div class='container wager_tile'>
 				<div class='row'>
-					Value: <input type='number' min='0' value=${wager.value}>
+					Value: <input type='number' class='form-control' min='0' value=${wager.value}>
 				</div>
 				<div class='row'>
-					Quantity: <input type='number' min='1' value=${wager.quantity}>
+					Quantity: <input type='number' class='form-control' min='1' value=${wager.quantity}>
 				</div>
 				<br>
 				<div class='row'>
@@ -288,22 +338,23 @@ function buildWagers(wager_array) {
 
 function addWagerTile() {
     let wager_html = `
-		<div class='col'>
-			<div class='container wager_tile'>
-				<div class='row'>
-					Value: <input type='number' min='0'>
-				</div>
-				<div class='row'>
-					Quantity: <input type='number' min='1'>
-				</div>
-				<br>
-				<div class='row'>
-					<button type="button" class='btn btn-danger' onclick='deleteWager(this)'>Delete</button>
-				</div>
-			</div>
-		</div>
+        <div class='container wager_tile'>
+            <div class='row'>
+                Value: <input type='number' min='0'>
+            </div>
+            <div class='row'>
+                Quantity: <input type='number' min='1'>
+            </div>
+            <br>
+            <div class='row'>
+                <button type="button" class='btn btn-danger' onclick='deleteWager(this)'>Delete</button>
+            </div>
+        </div>
 		`;
-    document.querySelector('#wagers div').innerHTML += wager_html;
+    let new_tile = document.createElement('div');
+    new_tile.classList.add('col');
+    new_tile.innerHTML = wager_html;
+    document.querySelector('#wagers div').appendChild(new_tile);
 }
 
 function deleteWager(e) {
@@ -312,7 +363,7 @@ function deleteWager(e) {
 
 //this saves all team objects with current wager chip values
 function saveTeamData() {
-    let teams_data = {};
+    let teams_data = [];
     let team_containers =  document.querySelector('#team_name_inputs').children;
     for(let i=0; i<document.querySelector('#num_teams_range').value; i++) {
         let team_name = team_containers[i].children[0].querySelector('input').value;
@@ -334,9 +385,13 @@ function saveTeamData() {
             });
         }
         //console.log(team_wagers);
-        teams_data[team_name] = {
-            wagers: team_wagers
-        };
+        let score_bias_input = document.querySelector(`#team_${i+1}_score_bias`);
+        let score_bias = score_bias_input.value ? parseInt(score_bias_input.value) : 0;
+        teams_data.push({
+            team_name: team_name,
+            wagers: team_wagers,
+            score_bias: score_bias
+        });
 	}
     teams = teams_data;
     //console.log(teams);

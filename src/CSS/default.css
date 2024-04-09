@@ -12,6 +12,15 @@
     margin: auto;
 }
 
+.team_control_box {
+    margin: 15px auto;
+    
+}
+
+.team_running_info {
+    text-align: right;
+}
+
 .question_settings {
     width: 90%;
     margin: auto;
@@ -52,6 +61,7 @@
     text-align: center;
     font-size: 32px;
     border-radius: 5px;
+    cursor: pointer;
 }
 
 .wager_chip_unanswered {
@@ -64,4 +74,20 @@
 
 .wager_chip_incorrect {
     background-color: red;
+}
+
+
+/* Scoreboard & question styling */
+.scoreboard {
+    width: 60%;
+    margin: auto;
+    border-radius: 5px;
+    border: 3px solid black;
+}
+
+.question_display {
+    width: 60%;
+    margin: 20px auto;
+    font-size: 60px;
+    font-family: 'Comic Sans';
 }

@@ -8,7 +8,7 @@ var questions = {
     revealed: false,
     questions: []
 };
-var teams = {};
+var teams = [];
 
 //set up refresh to read files every 5 seconds
 let data_refresh = null;
@@ -53,19 +53,23 @@ function refreshData() {
         questions = json;
     });
 
-    rebuildTable();
-    rebuildQuestion();
+    //wait a little for the fetch to resolve
+    setTimeout( () => {
+        rebuildTable();
+        rebuildQuestion();
+    }, 100);
+    
 }
 
 function rebuildTable() {
     let team_scores = [];
-    for (let team in teams) {
-        let total_points = 0;
-        for (let wager of teams[team].wagers) {
+    for (let team of teams) {
+        let total_points = team.score_bias;
+        for (let wager of team.wagers) {
             if (wager.correct) total_points += wager.value;
         }
         team_scores.push({
-            team: team,
+            team: team.team_name,
             points: total_points
         });
     }
